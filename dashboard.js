@@ -12,7 +12,18 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     createCharts();
     addAnimations();
+    checkAndHideAdminPanel()
 });
+
+// function to hide admin panel
+function checkAndHideAdminPanel() {
+    const adminPanelButton = document.querySelector("#admin-pannel");
+    const adminUsers = ['Kavya', 'Nausheen', 'Subash', 'Raghav', 'Gautham', 'Daison', 'Neavetha'];
+    if(!adminUsers.includes(currentUser.name)){
+        console.log("Admin panel button is hidden")
+        adminPanelButton.classList.add("admin-panel-hide");
+    }
+}
 
 // Update statistics
 function updateStats() {

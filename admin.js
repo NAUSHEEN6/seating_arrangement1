@@ -140,6 +140,7 @@ function updateSummaryStats() {
 
 // Get waiting list for a specific date
 function getWaitingList(date) {
+    console.log(JSON.parse(localStorage.getItem(`waitingList_${date}`)) || [])
     return JSON.parse(localStorage.getItem(`waitingList_${date}`)) || [];
 }
 
@@ -166,7 +167,7 @@ function createTodayPieChart() {
         data: {
             labels: ['Booked Seats', 'Waiting List'],
             datasets: [{
-                data: [todayBookings.length, waitingList.length],
+                data: [todayBookings.length, Object.keys(waitingList).length],
                 backgroundColor: ['#10b981', '#f59e0b'],
                 borderWidth: 2,
                 borderColor: '#ffffff'
@@ -205,8 +206,8 @@ function createWeeklyBarChart() {
         const waitingList = getWaitingList(dateStr);
         
         const totalEmployees = employees.length;
-        const bookedPercentage = (dayBookings.length / totalEmployees) * 100;
-        const waitingPercentage = (waitingList.length / totalEmployees) * 100;
+        const bookedPercentage = (dayBookings.length / 25) * 100;
+        const waitingPercentage = (Object.keys(waitingList).length / totalEmployees) * 100;
         
         weekData.push({
             day: date.toLocaleDateString('en-US', { weekday: 'short' }),
@@ -328,19 +329,19 @@ function renderBookingsTable() {
 // Render waiting list
 function renderWaitingList() {
     const selectedDate = document.getElementById('dateFilter').value || new Date().toISOString().split('T')[0];
-    const waitingList = getWaitingList(selectedDate);
+    const waitingList = getWaitingList(selectedDate); // should return an object
     const waitingListContainer = document.getElementById('waitingListContainer');
-    
-    if (waitingList.length === 0) {
+
+    if (!waitingList || Object.keys(waitingList).length === 0) {
         waitingListContainer.innerHTML = '';
         return;
     }
-    
+
     waitingListContainer.innerHTML = `
         <div class="waiting-list-section">
             <h3>🔁 Waiting List for ${formatDate(selectedDate)}</h3>
             <div class="waiting-list-grid">
-                ${waitingList.map(name => `
+                ${Object.entries(waitingList).map(([empId, name]) => `
                     <div class="waiting-item">
                         <span class="waiting-employee">${name}</span>
                         <span class="waiting-status">Waiting</span>
@@ -350,6 +351,7 @@ function renderWaitingList() {
         </div>
     `;
 }
+
 
 // Setup date filter
 function setupDateFilter() {
