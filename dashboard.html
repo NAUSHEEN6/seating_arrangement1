@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capgemini Seat Flow - Dashboard</title>
+    <link rel="stylesheet" href="style1.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="brand-header">
+                <div class="capgemini-logo">
+                    <h1>Capgemini</h1>
+                    <span>Seat Flow Dashboard</span>
+                </div>
+            </div>
+            <div class="user-info">
+                <span id="welcomeUser">Welcome, Employee</span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+        
+        <main class="dashboard-main">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🪑</div>
+                    <div class="stat-info">
+                        <h3>Total Seats</h3>
+                        <span class="stat-number">25</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3>Booked Today</h3>
+                        <span class="stat-number" id="bookedToday">0</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-info">
+                        <h3>Available</h3>
+                        <span class="stat-number" id="availableToday">25</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-info">
+                        <h3>Most Used</h3>
+                        <span class="stat-number">Seat-36</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Today's Seat Usage</h3>
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <h3>Last 7 Days Bookings</h3>
+                    <canvas id="barChart"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <h3>Department Distribution</h3>
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button onclick="goToSeating()" class="action-btn primary">
+                    <span>🪑 Book a Seat</span>
+                </button>
+                
+                <button onclick="goToBookings()" class="action-btn secondary">
+                    <span>📚 My Bookings</span>
+                </button>
+                
+                <button onclick="goToSeatPlan()" class="action-btn tertiary">
+                    <span>🗺️ Seat Plan</span>
+                </button>
+                
+                <button onclick="goToAdmin()" class="action-btn quaternary">
+                    <span>🛠️ Admin Panel</span>
+                </button>
+            </div>
+        </main>
+    </div>
+    
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capgemini Seat Flow - Office Layout</title>
+    <link rel="stylesheet" href="style1.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .static-seat {
+            cursor: default !important;
+            opacity: 0.9;
+        }
+        
+        .static-seat:hover {
+            transform: translateY(-3px) rotateX(2deg) scale(1.02);
+        }
+        
+        .cubicle-info {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 25px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .office-layout-title {
+            text-align: center;
+            margin: 2rem 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .layout-description {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .department-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem auto;
+            max-width: 800px;
+        }
+        
+        .dept-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dept-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .dept-card .seat-count {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+        }
+        
+        .dept-card.dcc { border-left: 4px solid #059669; }
+        .dept-card.bread { border-left: 4px solid #d97706; }
+        .dept-card.solutions { border-left: 4px solid #2563eb; }
+        .dept-card.cap360 { border-left: 4px solid #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="seatplan-container">
+        <header class="dashboard-header">
+            <div class="brand-header">
+                <div class="capgemini-logo">
+                    <h1>Capgemini</h1>
+                    <span>Office Floor Plan</span>
+                </div>
+            </div>
+            <div class="user-info">
+                <span id="welcomeUser">Welcome, Employee</span>
+                <button onclick="goToDashboard()" class="back-btn">← Dashboard</button>
+            </div>
+        </header>
+        
+        <main class="dashboard-main">
+            <div class="office-layout-title">
+                🏢 Interactive Office Layout - 3D Cubicle View
+            </div>
+            <div class="layout-description">
+                Visual representation of our office floor plan with department zones and cubicle arrangements
+            </div>
+            
+            <div class="department-stats">
+                <div class="dept-card dcc">
+                    <h3>🟩 DCC Team</h3>
+                    <div class="seat-count">4</div>
+                    <p>Seats 23-26</p>
+                </div>
+                <div class="dept-card bread">
+                    <h3>🟫 BREAD Team</h3>
+                    <div class="seat-count">9</div>
+                    <p>Seats 27-29, 38-43</p>
+                </div>
+                <div class="dept-card solutions">
+                    <h3>🟦 Solutions Team</h3>
+                    <div class="seat-count">8</div>
+                    <p>Seats 30-37</p>
+                </div>
+                <div class="dept-card cap360">
+                    <h3>⬜ Cap360 Team</h3>
+                    <div class="seat-count">4</div>
+                    <p>Seats 44-47</p>
+                </div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color dcc"></div>
+                    <span>DCC Department (4 Cubicles)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color bread"></div>
+                    <span>BREAD Department (9 Cubicles)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color solutions"></div>
+                    <span>Solutions Department (8 Cubicles)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color cap360"></div>
+                    <span>Cap360 Department (4 Cubicles)</span>
+                </div>
+            </div>
+            
+            <div class="seat-grid" id="staticSeatGrid">
+                <!-- Static 3D cubicle layout will be generated by JavaScript -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem; color: rgba(255, 255, 255, 0.7);">
+                <p>💡 <strong>Total Office Capacity:</strong> 25 Workstations | <strong>Layout:</strong> 7×4 Grid with Strategic Department Clustering</p>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Static seat layout - exact same as seating.js
+        const seatLayout = [
+            [47, 33, 34, 23],
+            [46, 32, 35, null],
+            [45, 31, 36, null],
+            [44, 30, 37, null],
+            [43, 29, 38, 24],
+            [42, 28, 39, 25],
+            [41, 27, 40, 26]
+        ];
+
+        const seatConfig = {
+            23: { department: 'dcc' }, 24: { department: 'dcc' }, 25: { department: 'dcc' }, 26: { department: 'dcc' },
+            27: { department: 'bread' }, 28: { department: 'bread' }, 29: { department: 'bread' },
+            30: { department: 'solutions' }, 31: { department: 'solutions' }, 32: { department: 'solutions' }, 33: { department: 'solutions' },
+            34: { department: 'solutions' }, 35: { department: 'solutions' }, 36: { department: 'solutions' }, 37: { department: 'solutions' },
+            38: { department: 'bread' }, 39: { department: 'bread' }, 40: { department: 'bread' }, 41: { department: 'bread' }, 42: { department: 'bread' }, 43: { department: 'bread' },
+            44: { department: 'cap360' }, 45: { department: 'cap360' }, 46: { department: 'cap360' }, 47: { department: 'cap360' }
+        };
+
+        function renderStaticSeatGrid() {
+            const seatGrid = document.getElementById('staticSeatGrid');
+            seatGrid.innerHTML = '';
+            
+            seatLayout.forEach(row => {
+                row.forEach(seatNumber => {
+                    const seatElement = createStaticCubicle(seatNumber);
+                    seatGrid.appendChild(seatElement);
+                });
+            });
+        }
+
+        function createStaticCubicle(seatNumber) {
+            const cubicleDiv = document.createElement('div');
+            
+            if (!seatNumber || !seatConfig[seatNumber]) {
+                cubicleDiv.className = 'empty-space';
+                return cubicleDiv;
+            }
+            
+            const config = seatConfig[seatNumber];
+            cubicleDiv.className = `seat ${config.department} static-seat`;
+            
+            cubicleDiv.innerHTML = `
+                <div class="seat-number">Cubicle-${seatNumber}</div>
+                <div class="seat-status">${getDepartmentName(config.department)} Dept</div>
+                <div class="cubicle-info">${seatNumber}</div>
+            `;
+            
+            // Add hover effect with department info
+            cubicleDiv.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) rotateX(10deg) scale(1.08)';
+                this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 40px rgba(var(--seat-glow), 0.5)';
+            });
+            
+            cubicleDiv.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+            
+            return cubicleDiv;
+        }
+
+        function getDepartmentName(dept) {
+            const names = {
+                'dcc': 'DCC',
+                'bread': 'BREAD', 
+                'solutions': 'Solutions',
+                'cap360': 'Cap360'
+            };
+            return names[dept] || dept;
+        }
+
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Set welcome message
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser) {
+            document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.name}`;
+        }
+
+        // Initialize static 3D layout
+        document.addEventListener('DOMContentLoaded', function() {
+            renderStaticSeatGrid();
+            
+            // Add subtle animation to cubicles on load
+            setTimeout(() => {
+                const seats = document.querySelectorAll('.static-seat');
+                seats.forEach((seat, index) => {
+                    setTimeout(() => {
+                        seat.style.opacity = '1';
+                        seat.style.transform = 'translateY(0)';
+                    }, index * 50);
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
