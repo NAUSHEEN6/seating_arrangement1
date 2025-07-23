@@ -1,3 +1,5 @@
+Chart.register(ChartDataLabels);
+
 // Check authentication and admin role
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 if (!currentUser) {
@@ -190,52 +192,136 @@ function createTodayPieChart() {
 }
 
 // Create weekly bar chart showing booking load
+// function createWeeklyBarChart() {
+//     const ctx = document.getElementById('weeklyBarChart').getContext('2d');
+    
+//     // Get last 7 days
+//     const weekData = [];
+//     const today = new Date();
+    
+//     for (let i = 6; i >= 0; i--) {
+//         const date = new Date(today);
+//         date.setDate(date.getDate() - i);
+//         const dateStr = date.toISOString().split('T')[0];
+        
+//         const dayBookings = allBookings.filter(booking => booking.date === dateStr);
+//         const waitingList = getWaitingList(dateStr);
+        
+//         const totalEmployees = employees.length;
+//         const bookedPercentage = (dayBookings.length / 25) * 100;
+//         const waitingPercentage = (Object.keys(waitingList).length / totalEmployees) * 100;
+        
+//         weekData.push({
+//             day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+//             booked: Math.round(bookedPercentage),
+//             waiting: Math.round(waitingPercentage)
+//         });
+//     }
+    
+//     if (analyticsChart2) {
+//         analyticsChart2.destroy();
+//     }
+    
+//     analyticsChart2 = new Chart(ctx, {
+//         type: 'bar',
+//         data: {
+//             labels: weekData.map(d => d.day),
+//             datasets: [
+//                 {
+//                     label: '% Booked',
+//                     data: weekData.map(d => d.booked),
+//                     backgroundColor: '#3b82f6',
+//                     borderRadius: 4
+//                 },
+//                 {
+//                     label: '% Waiting',
+//                     data: weekData.map(d => d.waiting),
+//                     backgroundColor: '#f97316',
+//                     borderRadius: 4
+//                 }
+//             ]
+//         },
+//         options: {
+//             responsive: true,
+//             plugins: {
+//                 title: {
+//                     display: true,
+//                     text: 'Weekly Booking Load Analysis',
+//                     font: { size: 16, weight: 'bold' }
+//                 },
+//                 legend: {
+//                     position: 'top'
+//                 }
+//             },
+//             scales: {
+//                 y: {
+//                     beginAtZero: true,
+//                     max: 100,
+//                     ticks: {
+//                         callback: function(value) {
+//                             return value + '%';
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     });
+// }
+
 function createWeeklyBarChart() {
     const ctx = document.getElementById('weeklyBarChart').getContext('2d');
-    
-    // Get last 7 days
+
     const weekData = [];
     const today = new Date();
-    
+    const TOTAL_SEATS = 25;
+
     for (let i = 6; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
         const dateStr = date.toISOString().split('T')[0];
-        
+
         const dayBookings = allBookings.filter(booking => booking.date === dateStr);
         const waitingList = getWaitingList(dateStr);
         
-        const totalEmployees = employees.length;
-        const bookedPercentage = (dayBookings.length / 25) * 100;
-        const waitingPercentage = (Object.keys(waitingList).length / totalEmployees) * 100;
-        
+        const bookedCount = dayBookings.length;
+        const waitlistedCount = Object.keys(waitingList).length;
+
+        // Booked is always part of the bar
+        const bookedPercent = (bookedCount / TOTAL_SEATS) * 100;
+
+        // Waitlist only shows if fully booked
+        const showWaitlist = bookedCount >= TOTAL_SEATS;
+        const waitlistedPercent = showWaitlist ? (waitlistedCount / TOTAL_SEATS) * 100 : 0;
+
         weekData.push({
             day: date.toLocaleDateString('en-US', { weekday: 'short' }),
-            booked: Math.round(bookedPercentage),
-            waiting: Math.round(waitingPercentage)
+            booked: bookedPercent,
+            waiting: waitlistedPercent
         });
     }
-    
+
     if (analyticsChart2) {
         analyticsChart2.destroy();
     }
-    
+
     analyticsChart2 = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: weekData.map(d => d.day),
             datasets: [
                 {
-                    label: '% Booked',
+                    label: 'Booked',
                     data: weekData.map(d => d.booked),
                     backgroundColor: '#3b82f6',
+                    stack: 'combined',
                     borderRadius: 4
                 },
                 {
-                    label: '% Waiting',
+                    label: 'Waitlisted',
                     data: weekData.map(d => d.waiting),
                     backgroundColor: '#f97316',
-                    borderRadius: 4
+                    stack: 'combined',
+                    borderRadius: 0
                 }
             ]
         },
@@ -249,22 +335,55 @@ function createWeeklyBarChart() {
                 },
                 legend: {
                     position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                        }
+                    }
+                },
+                 datalabels: {
+                    display: true,
+                    formatter: function (value, context) {
+                        const booked = context.chart.data.datasets[0].data[context.dataIndex];
+                        const waiting = context.chart.data.datasets[1].data[context.dataIndex];
+                        const total = booked + waiting;
+                        // Only display once, on the top dataset (waitlisted or booked)
+                        if (context.datasetIndex === 1 || (context.datasetIndex === 0 && waiting === 0)) {
+                            return total.toFixed(0) + '%';
+                        }
+                        return '';
+                    },
+                    anchor: 'end',
+                    align: 'end',
+                    font: {
+                        size: 12,
+                        weight: 'bold'
+                    },
+                    color: '#000'
                 }
             },
             scales: {
+                x: {
+                    stacked: true
+                },
                 y: {
+                    stacked: true,
                     beginAtZero: true,
-                    max: 100,
+                    max: 150, // allow > 100% if waitlisted
                     ticks: {
-                        callback: function(value) {
+                        callback: function (value) {
                             return value + '%';
                         }
                     }
                 }
             }
-        }
+        },
+        plugins: [ChartDataLabels]
     });
 }
+
 
 // Render bookings table with waiting list
 function renderBookingsTable() {

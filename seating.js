@@ -528,6 +528,8 @@ function bookAllSeats() {
         44, 45, 46, 47       // cap360
     ];
 
+    const today = new Date().toISOString().split('T')[0];
+
     let bookedSeats = tempEmployees.reduce((acc, em, index) => {
         let seatKey = 'Seat-' + seatNumbers[index];
         acc[seatKey] = em?.name || 'Unknown'; // Optional fallback
@@ -536,7 +538,7 @@ function bookAllSeats() {
 
     console.log(bookedSeats);
     console.log(remainingEmployees)
-    localStorage.setItem('bookedSeats_2025-07-20', JSON.stringify(bookedSeats));
+    localStorage.setItem('bookedSeats_'+today, JSON.stringify(bookedSeats));
 }
 
 
