@@ -1,3 +1,41 @@
+// import { employees } from "./utils/employees";
+
+const employees = [
+    { id: "Emp001", name: "Subash" },
+    { id: "Emp002", name: "Raghav" },
+    { id: "Emp003", name: "Gautham" },
+    { id: "Emp004", name: "Daison" },
+    { id: "Emp005", name: "Hari" },
+    { id: "Emp006", name: "Rahul" },
+    { id: "Emp007", name: "Arun Sandeep" },
+    { id: "Emp008", name: "Sumithra" },
+    { id: "Emp009", name: "Monalisa" },
+    { id: "Emp010", name: "Mythili" },
+    { id: "Emp011", name: "Debora" },
+    { id: "Emp012", name: "Shamshath" },
+    { id: "Emp013", name: "Shanthini" },
+    { id: "Emp014", name: "Ramya" },
+    { id: "Emp015", name: "Tejas" },
+    { id: "Emp016", name: "Anand" },
+    { id: "Emp017", name: "Harsha" },
+    { id: "Emp018", name: "Ankan" },
+    { id: "Emp019", name: "Kavya" },
+    { id: "Emp020", name: "Nausheen" },
+    { id: "Emp021", name: "Sneha" },
+    { id: "Emp022", name: "Yukti" },
+    { id: "Emp023", name: "Karthik" },
+    { id: "Emp024", name: "Gautham s" },
+    { id: "Emp025", name: "Gautham d" },
+    { id: "Emp026", name: "Neavetha" },
+    { id: "Emp027", name: "Aravind Ramesh" },
+    { id: "Emp028", name: "Aravind sagar" },
+    { id: "Emp029", name: "Hari prasad" },
+    { id: "Emp030", name: "Karunya" },
+    { id: "Emp031", name: "Kuladeepa" },
+    { id: "Emp032", name: "Rishee" },
+    { id: "Emp033", name: "Savitha" }
+];
+
 // Check authentication
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 if (!currentUser) {
@@ -75,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadTodayBookings();
     renderSeatGrid();
     checkExistingBooking();
+    showOrDisableWaitlistButton();
 });
 
 // Load today's bookings
@@ -307,10 +346,13 @@ function showSuccessAnimation() {
 function updateBookingInfo(message) {
     const bookingInfo = document.getElementById('bookingInfo');
     bookingInfo.innerHTML = `<p style="color: #10b981; font-weight: 600;">${message}</p>`;
-    
-    setTimeout(() => {
-        bookingInfo.innerHTML = '<p>Click on an available seat to book it for today</p>';
-    }, 3000);
+
+    const totalBookingsForToday = Object.keys(todayBookings).length;
+    if(totalBookingsForToday < 25){
+        setTimeout(() => {
+            bookingInfo.innerHTML = '<p>Click on an available seat to book it for today</p>';
+        }, 3000);
+    }
 }
 
 // Check existing booking
@@ -319,9 +361,27 @@ function checkExistingBooking() {
         todayBookings[seat] === currentUser.name
     );
     
+    const totalBookingsForToday = Object.keys(todayBookings).length;
+
     if (userBooking) {
         updateBookingInfo(`You have already booked ${userBooking} for today`);
     }
+
+    console.log(totalBookingsForToday)
+    if(totalBookingsForToday == 25){
+        const today = new Date().toISOString().split('T')[0];
+        const waitingListKey = `waitingList_${today}`;
+        const waitingList = JSON.parse(localStorage.getItem(waitingListKey)) || {};
+        if(!waitingList.hasOwnProperty(currentUser.id)){
+            updateBookingInfo('The seats are full, click below button to join waitlist');
+        }
+        else{
+            updateBookingInfo('The seats are full, and you\'ve already waitlisted');
+        }
+    }
+
+
+
 }
 
 // Modal functions
@@ -357,15 +417,55 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Add to waiting list
-function addToWaitingList(employeeName, date) {
+function addToWaitingList(employee = currentUser, date = new Date().toISOString().split('T')[0]) {
     const waitingListKey = `waitingList_${date}`;
-    const waitingList = JSON.parse(localStorage.getItem(waitingListKey)) || [];
     
-    if (!waitingList.includes(employeeName)) {
-        waitingList.push(employeeName);
+    // Retrieve existing waiting list or initialize as an empty object
+    const waitingList = JSON.parse(localStorage.getItem(waitingListKey)) || {};
+
+    console.log(waitingListKey, waitingList);
+
+    // Only add if employee ID is not already present
+    if (!waitingList.hasOwnProperty(employee.id)) {
+        waitingList[employee.id] = employee.name;
         localStorage.setItem(waitingListKey, JSON.stringify(waitingList));
+        window.location.reload();
     }
 }
+
+// function to disable and hide waitlist button 
+
+function showOrDisableWaitlistButton() {
+    const waitlistButton = document.getElementById('waitlist');
+    const today = new Date().toISOString().split('T')[0];
+    const waitingListKey = `waitingList_${today}`;
+    const waitingList = JSON.parse(localStorage.getItem(waitingListKey)) || {};
+    const bookingsCount = Object.keys(todayBookings || {}).length;
+
+    // Hide button by default
+    waitlistButton.style.display = 'none';
+    waitlistButton.disabled = false;
+    waitlistButton.textContent = 'Waitlist';
+
+    console.log(bookingsCount, waitingList, waitingList.hasOwnProperty(currentUser.id))
+
+    // Show/disable logic
+    if (bookingsCount === 25) {
+        if (!waitingList.hasOwnProperty(currentUser.id)) {
+            // User not in waitlist, show button
+            console.log("Yes")
+            waitlistButton.style.display = 'inline-block';
+        } else {
+            // User already in waitlist
+            console.log("Yess")
+            waitlistButton.style.display = 'inline-block';
+            waitlistButton.disabled = true;
+            waitlistButton.textContent = 'Waitlisted';
+        }
+    }
+}
+
+
 
 // Show waiting list notification
 function showWaitingListNotification() {
@@ -413,3 +513,34 @@ setInterval(() => {
     loadTodayBookings();
     renderSeatGrid();
 }, 10000);
+
+
+// function to book all seats (testing)
+
+function bookAllSeats() {
+    let tempEmployees = employees.slice(0, 25);
+    let remainingEmployees = employees.slice(25, 33);
+    const seatNumbers = [
+        23, 24, 25, 26,      // dcc
+        27, 28, 29,          // bread
+        30, 31, 32, 33, 34, 35, 36, 37,  // solutions
+        38, 39, 40, 41, 42, 43,          // bread
+        44, 45, 46, 47       // cap360
+    ];
+
+    const today = new Date().toISOString().split('T')[0];
+
+    let bookedSeats = tempEmployees.reduce((acc, em, index) => {
+        let seatKey = 'Seat-' + seatNumbers[index];
+        acc[seatKey] = em?.name || 'Unknown'; // Optional fallback
+        return acc;
+    }, {});
+
+    console.log(bookedSeats);
+    console.log(remainingEmployees)
+    localStorage.setItem('bookedSeats_'+today, JSON.stringify(bookedSeats));
+}
+
+
+// ⚠️ uncomment this only while testing
+// bookAllSeats();
